@@ -172,7 +172,7 @@ const { countryLookup, allPins, ringPins } = useMemo(() => {
     if (!iso3) return "rgba(255,255,255,0)"; // fully transparent by default
     if (hoveredIso3 === iso3) return "rgba(255,255,255,0.4)"; // hover glow
     const c = countryLookup.get(iso3);
-    if (c?.highlight === "visited") return "hsla(96, 35%, 59%, 0.39)"; // overlay color
+    if (c?.highlight === "visited") return "hsla(224, 35%, 70%, 0.23)"; // overlay highlight color
     return "rgba(255,255,255,0)"; // no overlay otherwise
   },
   [countryLookup, hoveredIso3]
@@ -195,6 +195,78 @@ const { countryLookup, allPins, ringPins } = useMemo(() => {
     const flagUrl = iso3 ? `https://flagcdn.com/w80/${iso3.toLowerCase()}.png` : null;
     setSelected(c ?? { iso3, label, highlight: "unknown", notes: "", trips: [], flagUrl });
   };
+
+  // TripTile subcomponent
+  function TripTile({ trip, iso3, flagUrl }) {
+    const hasImg = !!trip.coverImg;
+    const imgSrc = hasImg ? trip.coverImg : flagUrl;
+    const citiesPreview =
+      Array.isArray(trip.cities) && trip.cities.length > 0
+        ? trip.cities.slice(0, 3).join(", ")
+        : "";
+    const isLinked = !!trip.link;
+    return isLinked ? (
+      <a
+        href={trip.link}
+        className="group block rounded-xl shadow-lg bg-white/90 border border-gray-200 overflow-hidden transition-all duration-200 hover:scale-[1.04] hover:shadow-amber-300/40 hover:z-10 relative"
+        style={{ minHeight: 130, height: 150, textDecoration: "none" }}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <div
+          className="w-full h-24 bg-gray-100 flex items-center justify-center overflow-hidden"
+          style={{
+            background: hasImg
+              ? `url(${imgSrc}) center/cover`
+              : flagUrl
+              ? `url(${flagUrl}) center/contain no-repeat, linear-gradient(90deg,#f8fafc,#fef3c7)`
+              : "linear-gradient(90deg,#f8fafc,#fef3c7)",
+          }}
+        >
+          {!hasImg && !flagUrl && (
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-amber-400" />
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          <div className="font-semibold text-gray-900 text-base truncate">{trip.label || "Trip"}</div>
+          <div className="text-xs text-gray-500 mb-1">{trip.when}</div>
+          <div className="text-sm text-gray-700 truncate">{citiesPreview}</div>
+        </div>
+        <div className="absolute bottom-2 right-3 text-xs text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">
+          View Trip &rarr;
+        </div>
+      </a>
+    ) : (
+      <div
+        className="rounded-xl shadow bg-white/90 border border-gray-200 overflow-hidden transition-all duration-200"
+        style={{ minHeight: 130, height: 150 }}
+      >
+        <div
+          className="w-full h-24 bg-gray-100 flex items-center justify-center overflow-hidden"
+          style={{
+            background: hasImg
+              ? `url(${imgSrc}) center/cover`
+              : flagUrl
+              ? `url(${flagUrl}) center/contain no-repeat, linear-gradient(90deg,#f8fafc,#fef3c7)`
+              : "linear-gradient(90deg,#f8fafc,#fef3c7)",
+          }}
+        >
+          {!hasImg && !flagUrl && (
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-amber-400" />
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          <div className="font-semibold text-gray-900 text-base truncate">{trip.label || "Trip"}</div>
+          <div className="text-xs text-gray-500 mb-1">{trip.when}</div>
+          <div className="text-sm text-gray-700 truncate">{citiesPreview}</div>
+        </div>
+      </div>
+    );
+  }
 
   /* -------------------- Side Panel -------------------- */
   const SidePanel = () => {
@@ -236,8 +308,8 @@ const { countryLookup, allPins, ringPins } = useMemo(() => {
             </p>
           </div>
 
-          <div className="border rounded-lg p-3">
-            <div className="flex items-center gap-2 mb-2">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
               <ListTree className="w-4 h-4 text-green-600" />
               <span className="font-semibold">Trips ({trips.length})</span>
             </div>
@@ -247,17 +319,16 @@ const { countryLookup, allPins, ringPins } = useMemo(() => {
                 <p>No trips recorded</p>
               </div>
             ) : (
-              trips.map((t) => (
-                <div key={t.id} className="border rounded p-2 mb-2">
-                  <div className="flex items-center gap-2 text-sm mb-1">
-                    <Calendar className="w-4 h-4 text-blue-500" />
-                    <span>{t.when || "Date unknown"}</span>
-                  </div>
-                  {t.cities?.length > 0 && (
-                    <div className="text-sm text-gray-600">{t.cities.join(" → ")}</div>
-                  )}
-                </div>
-              ))
+              <div className="grid grid-cols-2 gap-3">
+                {trips.map((t) => (
+                  <TripTile
+                    trip={t}
+                    key={t.id}
+                    iso3={selected.iso3}
+                    flagUrl={selected.flagUrl}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -295,10 +366,12 @@ const { countryLookup, allPins, ringPins } = useMemo(() => {
   atmosphereColor="rgba(140,170,255,0.25)"
   atmosphereAltitude={0.3}
 
-  // Surface: fallback to default blue marble if custom texture fails
-  globeImageUrl="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+  // Surface: use CORS-friendly earth at night texture
+  globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
   bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
-  cloudsImageUrl=""
+  cloudsImageUrl="https://unpkg.com/three-globe/example/img/earth-clouds.png"                              // Light, semi-transparent cloud layer
+
+
 
   showGraticules={false}
 
