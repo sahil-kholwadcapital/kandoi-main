@@ -25,8 +25,8 @@ import seedRaw from "../data/familySeed.js";
 const NAV_HEIGHT = 64;
 
 const CFG_HORIZONTAL = {
-  colW: 500,
-  rowH: 100,
+  colW: 900,
+  rowH: 125,
   boxW: 240,
   boxH: 70,
   margin: 40,
@@ -51,7 +51,14 @@ function withIds(node, depth = 1, path = "root") {
   if (!node || typeof node !== "object") return null;
   const id = `${path}-${slug(node.name || "unknown")}`;
   const spouses = Array.isArray(node.spouses)
-    ? node.spouses.map((s, i) => ({ id: `${id}-sp${i + 1}`, name: s }))
+    ? node.spouses.map((s, i) => {
+        if (typeof s === "string") {
+          return { id: `${id}-sp${i + 1}`, name: s };
+        } else if (typeof s === "object" && s !== null) {
+          return { ...s, id: `${id}-sp${i + 1}` };
+        }
+        return null;
+      }).filter(Boolean)
     : [];
   const children = Array.isArray(node.children)
     ? node.children
@@ -134,7 +141,6 @@ function calculateRelationship(id1, id2, nodeById, parentById, childrenById) {
     return gender === "male" ? "Bhai (Brother)" : gender === "female" ? "Ben (Sister)" : "Sibling";
   }
 
-  // Check grandparents
   const gp1 = p1 ? parentById.get(p1) : null;
   const gp2 = p2 ? parentById.get(p2) : null;
   
@@ -150,13 +156,11 @@ function calculateRelationship(id1, id2, nodeById, parentById, childrenById) {
     return "Uncle/Aunt";
   }
 
-  // Check if node2 is grandchild
   if (p1 && p1 === parentById.get(id2)) {
     const gender = node2.gender?.toLowerCase();
     return gender === "male" ? "Beta (Son)" : gender === "female" ? "Beti (Daughter)" : "Child";
   }
 
-  // Grandparents
   if (gp1 && gp1 === id2) {
     const gender = node2.gender?.toLowerCase();
     return gender === "male" ? "Dada (Grandfather)" : gender === "female" ? "Dadi (Grandmother)" : "Grandparent";
@@ -170,7 +174,6 @@ function calculateRelationship(id1, id2, nodeById, parentById, childrenById) {
   if (!res) return "No known relationship";
   const { distance1, distance2 } = res;
 
-  // Niece/Nephew
   if (distance1 === 1 && distance2 === 2) {
     const gender = node2.gender?.toLowerCase();
     const parentGender = nodeById.get(p2)?.gender?.toLowerCase();
@@ -184,7 +187,6 @@ function calculateRelationship(id1, id2, nodeById, parentById, childrenById) {
     return gender === "male" ? "Kaka/Chachu (Uncle)" : gender === "female" ? "Kaki/Chachi (Aunt)" : "Uncle/Aunt";
   }
 
-  // Cousins
   if (distance1 === distance2 && distance1 >= 2) {
     const degree = distance1 - 1;
     if (degree === 1) {
@@ -549,11 +551,9 @@ export default function FamilyTree() {
 
   const returnToFullTree = useCallback(() => setIsolatedIds(null), []);
 
-  // Build isolated tree by restructuring
   const isolatedTree = useMemo(() => {
     if (!isolatedIds || !tree) return null;
     
-    // Find the root of the isolated lineage
     const isolatedArray = Array.from(isolatedIds);
     let root = null;
     for (const id of isolatedArray) {
@@ -570,7 +570,6 @@ export default function FamilyTree() {
     
     if (!root) return null;
     
-    // Clone and rebuild tree with only isolated ids
     const clone = (node) => {
       if (!node || !isolatedIds.has(node.id)) return null;
       const kids = (node.children || [])
@@ -668,7 +667,9 @@ export default function FamilyTree() {
       } else {
         setSelected(node);
         setRelationshipResult("");
-        centerOnNode(node);
+        if (!node.id.includes("-sp")) {
+          centerOnNode(node);
+        }
       }
     },
     [relationshipTarget, nodeById, parentById, childrenById, centerOnNode]
@@ -761,6 +762,32 @@ export default function FamilyTree() {
   const pathSet = highlightedPaths;
   const matchSet = matchedNodes;
   const showAll = matchSet.size === 0;
+
+  // Calculate spouse connector lines
+  const spouseLinks = useMemo(() => {
+    const links = [];
+    renderNodes.forEach((node) => {
+      if (!node.spouses || node.spouses.length === 0) return;
+      
+      const o = orientXY(node.x, node.y, orientation);
+      const nodeX = o.X - minX + cfg.margin;
+      const nodeY = o.Y - minY + cfg.margin;
+      
+      const spouseCount = node.spouses.length;
+      const spouseSpacing = 150;
+      const spouseBaseOffset = cfg.boxW / 2 + spouseSpacing;
+      
+      node.spouses.forEach((spouse, i) => {
+        const spouseOffset = spouseBaseOffset + (i - (spouseCount - 1) / 2) * (cfg.boxW + spouseSpacing);
+        const x1 = nodeX + cfg.boxW / 2;
+        const y1 = nodeY;
+        const x2 = nodeX + spouseOffset - cfg.boxW / 2;
+        const y2 = nodeY;
+        links.push({ x1, y1, x2, y2 });
+      });
+    });
+    return links;
+  }, [renderNodes, minX, minY, cfg, orientation]);
 
   return (
     <div
@@ -921,8 +948,11 @@ export default function FamilyTree() {
             >
               <circle cx="2" cy="2" r="1" fill="rgba(0,0,0,0.03)" />
             </pattern>
+            <linearGradient id="spouseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#bcbcbc" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#9ca3af" stopOpacity="0.8" />
+            </linearGradient>
           </defs>
-
           <g transform={`translate(${tx} ${ty}) scale(${scale})`}>
             <rect
               width={contentWidth}
@@ -930,52 +960,48 @@ export default function FamilyTree() {
               fill="url(#grid)"
             />
 
-            {/* edges */}
-            {renderNodes.flatMap((parent) => {
-              if (!parent.children?.length) return [];
-              return parent.children.map((child) => {
-                const pXY = orientXY(parent.x, parent.y, orientation);
-                const cXY = orientXY(child.x, child.y, orientation);
+            {/* Spouse connector lines */}
+            <g className="spouse-links" style={{ pointerEvents: 'none' }}>
+              {spouseLinks.map(({ x1, y1, x2, y2 }, i) => (
+                <line
+                  key={i}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="#c7c7c7"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  opacity={0.8}
+                />
+              ))}
+            </g>
 
-                const px = pXY.X - minX + cfg.margin + cfg.boxW / 2;
-                const py = pXY.Y - minY + cfg.margin;
-                const cx = cXY.X - minX + cfg.margin - cfg.boxW / 2;
-                const cy = cXY.Y - minY + cfg.margin;
-                const mx = (px + cx) / 2;
-
-                const inPath =
-                  pathSet.has(parent.id) && pathSet.has(child.id);
-                const highlighted =
-                  showAll ||
-                  inPath ||
-                  matchSet.has(parent.id) ||
-                  matchSet.has(child.id);
-
-                return (
-                  <path
-                    key={`${parent.id}-${child.id}`}
-                    d={`M ${px} ${py} H ${mx} V ${cy} H ${cx}`}
-                    stroke={inPath ? "#3b82f6" : highlighted ? "#6b7280" : "#d1d5db"}
-                    strokeWidth={inPath ? 3 : 2}
-                    fill="none"
-                    opacity={highlighted ? 1 : 0.4}
-                    className="transition-all duration-300"
-                  />
-                );
-              });
-            })}
-
-            {/* nodes */}
+            {/* Nodes */}
             {renderNodes.map((node) => {
               const o = orientXY(node.x, node.y, orientation);
               const x = o.X - minX + cfg.margin;
               const y = o.Y - minY + cfg.margin;
-              const isMatched = matchSet.has(node.id);
+              // Highlight if node or any spouse matches search
+              const isMatched =
+                matchSet.has(node.id) ||
+                (node.spouses || []).some((sp) => matchSet.has(sp.id));
+              // Hover if node or any spouse is hovered
+              const isHovered =
+                hoveredNode === node.id ||
+                (node.spouses || []).some((sp) => hoveredNode === sp.id);
               const inPath = pathSet.has(node.id);
               const isSelected = selected?.id === node.id;
-              const isHovered = hoveredNode === node.id;
               const highlighted = showAll || isMatched || inPath;
               const isRelTarget = relationshipTarget?.id === node.id;
+
+              const spouseCount = (node.spouses || []).length;
+              const spouseSpacing = 150;
+              const spouseBaseOffset = cfg.boxW / 2 + spouseSpacing;
+              const spouseOffsets = Array.from({ length: spouseCount }, (_, i) => {
+                const mid = (spouseCount - 1) / 2;
+                return spouseBaseOffset + (i - mid) * (cfg.boxW + spouseSpacing);
+              });
 
               return (
                 <g
@@ -1038,16 +1064,47 @@ export default function FamilyTree() {
                     {node.name}
                   </text>
 
-                  {node.spouses?.length > 0 && (
-                    <text
-                      y="8"
-                      textAnchor="middle"
-                      fontSize={12}
-                      className="fill-gray-600 pointer-events-none"
-                    >
-                      m. {node.spouses.map((s) => s.name).join(", ")}
-                    </text>
-                  )}
+                  {(node.spouses || []).map((sp, i) => {
+                    const spouseIsSelected = selected?.id === sp.id;
+                    return (
+                      <g
+                        key={sp.id}
+                        transform={`translate(${spouseOffsets[i]} 0)`}
+                        onClick={(e) => handleNodeClick(sp, e)}
+                        className="cursor-pointer"
+                        filter={spouseIsSelected ? "url(#selectedGlow)" : "url(#floating)"}
+                      >
+                        <rect
+                          x={-cfg.boxW / 2}
+                          y={-cfg.boxH / 2}
+                          width={cfg.boxW}
+                          height={cfg.boxH}
+                          rx="12"
+                          fill="#fff"
+                          stroke={spouseIsSelected ? "#2563eb" : "#d1d5db"}
+                          strokeWidth={spouseIsSelected ? 2.5 : 1.5}
+                        />
+                        <text
+                          y="-4"
+                          textAnchor="middle"
+                          fontSize={13}
+                          className="font-semibold fill-gray-900"
+                        >
+                          {sp.name}
+                        </text>
+                        {sp.notes && (
+                          <text
+                            y="12"
+                            textAnchor="middle"
+                            fontSize={11}
+                            className="fill-gray-500"
+                          >
+                            {sp.notes}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  })}
 
                   {node.notes && (
                     <text
@@ -1083,6 +1140,59 @@ export default function FamilyTree() {
                 </g>
               );
             })}
+
+            {/* Edges */}
+            {renderNodes.flatMap((parent) => {
+              if (!parent.children?.length) return [];
+              
+              const spouseCount = (parent.spouses || []).length;
+              const spouseSpacing = 150;
+              const spouseBaseOffset = cfg.boxW / 2 + spouseSpacing;
+              const spouseOffsets = Array.from({ length: spouseCount }, (_, i) => {
+                const mid = (spouseCount - 1) / 2;
+                return spouseBaseOffset + (i - mid) * (cfg.boxW + spouseSpacing);
+              });
+
+              let parentAnchorX = null;
+              if (spouseCount > 0) {
+                const o = orientXY(parent.x, parent.y, orientation);
+                const x = o.X - minX + cfg.margin;
+                parentAnchorX = x + spouseOffsets[spouseCount - 1] + cfg.boxW / 2;
+              }
+
+              return parent.children.map((child) => {
+                const pXY = orientXY(parent.x, parent.y, orientation);
+                const cXY = orientXY(child.x, child.y, orientation);
+
+                const px = parentAnchorX !== null
+                  ? parentAnchorX
+                  : pXY.X - minX + cfg.margin + cfg.boxW / 2;
+                const py = pXY.Y - minY + cfg.margin;
+                const cx = cXY.X - minX + cfg.margin - cfg.boxW / 2;
+                const cy = cXY.Y - minY + cfg.margin;
+                const mx = px + (cfg.colW / 3);
+
+                const inPath =
+                  pathSet.has(parent.id) && pathSet.has(child.id);
+                const highlighted =
+                  showAll ||
+                  inPath ||
+                  matchSet.has(parent.id) ||
+                  matchSet.has(child.id);
+
+                return (
+                  <path
+                    key={`${parent.id}-${child.id}`}
+                    d={`M ${px} ${py} H ${mx} V ${cy} H ${cx}`}
+                    stroke={inPath ? "#3b82f6" : highlighted ? "#6b7280" : "#d1d5db"}
+                    strokeWidth={inPath ? 3 : 2}
+                    fill="none"
+                    opacity={highlighted ? 1 : 0.4}
+                    className="transition-all duration-300"
+                  />
+                );
+              });
+            })}
           </g>
         </svg>
       </div>
@@ -1096,7 +1206,6 @@ export default function FamilyTree() {
             maxHeight: "calc(100vh - 140px)",
           }}
         >
-          {/* Header */}
           <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl flex items-start justify-between">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -1108,7 +1217,6 @@ export default function FamilyTree() {
                   {selected.name}
                 </h2>
 
-                {/* Compact Info */}
                 <div className="mt-3 space-y-1 text-sm text-gray-700">
                   {selected.dob && (
                     <p>
@@ -1143,7 +1251,6 @@ export default function FamilyTree() {
               </div>
             </div>
 
-            {/* Close Button */}
             <button
               onClick={() => setSelected(null)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -1152,7 +1259,6 @@ export default function FamilyTree() {
             </button>
           </div>
 
-          {/* Content */}
           <div className="p-6 space-y-4">
             {/* Bio */}
             {selected.bio && (
@@ -1166,7 +1272,6 @@ export default function FamilyTree() {
               </div>
             )}
 
-            {/* Custom Tiles */}
             {[selected.tile1, selected.tile2, selected.tile3].map((tile, i) => {
               if (!tile || !tile.content) return null;
               return (
@@ -1184,7 +1289,6 @@ export default function FamilyTree() {
               );
             })}
 
-            {/* Website */}
             {selected.website && (
               <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">
@@ -1203,23 +1307,38 @@ export default function FamilyTree() {
 
             {/* Parents */}
             {(() => {
+              // Show both parents (main parent and their spouses)
               const pid = parentById.get(selected.id);
               const parent = pid ? nodeById.get(pid) : null;
               if (!parent) return null;
+              const parentSpouses = parent.spouses || [];
               return (
                 <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                   <h3 className="text-sm font-semibold text-gray-900 mb-2">
                     Parents
                   </h3>
-                  <button
-                    onClick={() => {
-                      setSelected(parent);
-                      centerOnNode(parent);
-                    }}
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                  >
-                    {parent.name}
-                  </button>
+                  <div className="flex flex-col gap-2 items-start">
+                    <button
+                      onClick={() => {
+                        setSelected(parent);
+                        centerOnNode(parent);
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium text-left"
+                    >
+                      {parent.name}
+                    </button>
+                    {parentSpouses.map((sp, i) => (
+                      <button
+                        key={sp.id || sp.name || i}
+                        onClick={() => {
+                          setSelected(sp);
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium text-left"
+                      >
+                        {typeof sp === "string" ? sp : sp.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               );
             })()}
@@ -1255,20 +1374,76 @@ export default function FamilyTree() {
               );
             })()}
 
-            {/* Generation */}
-            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-blue-600" />
-                <h3 className="text-sm font-semibold text-gray-900">
-                  Generation
+            {/* Spouse Tile */}
+            {selected.spouses && selected.spouses.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                  Spouse{selected.spouses.length > 1 ? "s" : ""}
                 </h3>
+                <div className="space-y-2">
+                  {selected.spouses.map((sp, i) => {
+                    const spouseName = typeof sp === "string" ? sp : sp.name;
+                    const spouseGender = typeof sp === "object" && sp.gender ? sp.gender : null;
+                    const spouseBio = typeof sp === "object" && sp.bio ? sp.bio : null;
+                    return (
+                      <div key={sp.id || spouseName || i} className="flex flex-col">
+                        <button
+                          onClick={() => {
+                            setSelected(sp);
+                          }}
+                          className="block text-sm text-blue-600 hover:text-blue-800 hover:underline text-left"
+                          style={{ cursor: "pointer" }}
+                        >
+                          {spouseName}
+                          {spouseGender && (
+                            <span className="ml-2 text-gray-500">({spouseGender})</span>
+                          )}
+                        </button>
+                        {spouseBio && (
+                          <span className="text-xs text-gray-500 mt-1">{spouseBio}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <p className="text-sm text-gray-700">
-                Generation {selected.generation}
-              </p>
-            </div>
+            )}
 
-            {/* Relationship Calculator */}
+            {/* Spouse tab for spouse nodes */}
+            {selected.id.includes("-sp") && (
+              <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Spouse</h3>
+                <button
+                  onClick={() => {
+                    const mainPersonId = selected.id.split("-sp")[0];
+                    const mainPerson = nodeById.get(mainPersonId);
+                    if (mainPerson) {
+                      setSelected(mainPerson);
+                      centerOnNode(mainPerson);
+                    }
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {nodeById.get(selected.id.split("-sp")[0])?.name || "Unknown"}
+                </button>
+              </div>
+            )}
+
+            {/* Generation (hide for spouse nodes) */}
+            {!selected.id.includes("-sp") && (
+              <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Generation
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-700">
+                  Generation {selected.generation}
+                </p>
+              </div>
+            )}
+
             <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
               <button
                 onClick={() => {
@@ -1300,8 +1475,8 @@ export default function FamilyTree() {
               )}
             </div>
 
-            {/* Isolate Tree Button */}
-            {!isolatedIds && (
+            {/* Isolate Tree Button (hide for spouse nodes) */}
+            {!isolatedIds && !selected.id.includes("-sp") && (
               <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
                 <button
                   onClick={() => isolateFamily(selected)}
