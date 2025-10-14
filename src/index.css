@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Atlas-specific pin styling */
+.atlas-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Custom tooltip styling for Leaflet */
+.custom-tooltip {
+  background: rgba(0, 0, 0, 0.8) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-size: 14px !important;
+  padding: 8px 12px !important;
+}
+
+.custom-tooltip::before {
+  border-top-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Ensure globe container doesn't interfere with React Globe GL */
+.globe-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Smooth transitions for mode switching */
+.atlas-view-transition {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Ensure proper stacking context for overlays */
+.atlas-overlay {
+  pointer-events: auto;
+  z-index: 1000;
+}
+
+/* Override default Leaflet styles for better integration */
+.leaflet-container {
+  background: #0b1020 !important;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-tip {
+  background: white;
+}
+
+/* Ensure Three.js canvas doesn't cause layout issues */
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Globe-specific adjustments */
+.globe-gl-container {
+  cursor: grab;
+}
+
+.globe-gl-container:active {
+  cursor: grabbing;
+}

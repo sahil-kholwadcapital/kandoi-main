@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+  :root {
+    --bg: #0b0c10;
+    --panel: #ffffff;
+    --text: #111827;
+    --muted: #6b7280;
+    --brand: #111827;
+    --brand-light: #f9fafb;
+    --link: #0f766e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: var(--text); background: #f7f7f7; }
+
+  .container { width: min(1100px, 92vw); margin: 0 auto; }
+
+  /* NAV */
+  .nav { position: sticky; top: 0; background: var(--panel); border-bottom: 1px solid #e5e7eb; z-index: 20; }
+  .nav__inner { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 0; }
+  .nav__brand { text-decoration: none; color: var(--brand); font-weight: 700; font-size: 1.125rem; }
+  .nav__links { display: flex; gap: 1rem; }
+  .nav__link { text-decoration: none; color: var(--text); opacity: .8; }
+  .nav__link.active, .nav__link:hover { opacity: 1; text-decoration: underline; }
+
+  /* HERO */
+  .hero {
+    position: relative; min-height: clamp(60vh, 82vh, 92vh);
+    background-size: cover; background-position: center;
+    display: grid; place-items: center; color: #fff;
+  }
+  .hero__overlay { position: absolute; inset: 0; background: rgba(0,0,0,.35); }
+  .hero__content { position: relative; text-align: center; padding: 0 1rem; }
+  .hero__content h1 { font-size: clamp(2rem, 6vw, 3.5rem); margin: 0 0 .5rem; letter-spacing: .06em; }
+  .hero__content p { font-size: clamp(1.1rem, 2.5vw, 1.5rem); margin: 0 0 1.25rem; opacity: .95; }
+  .hero__actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-block; padding: .75rem 1.1rem; border-radius: .6rem;
+    font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,.6);
+    transition: .2s ease; backdrop-filter: blur(2px);
+  }
+  .btn--light { background: #fff; color: #111827; border-color: #fff; }
+  .btn--light:hover { filter: brightness(.95); }
+  .btn--ghost { color: #fff; background: transparent; }
+  .btn--ghost:hover { background: rgba(255,255,255,.12); }
+
+  /* SECTIONS */
+  .section { background: var(--panel); padding: 3rem 0; border-top: 1px solid #eee; }
+  .section h2 { margin: 0 0 .5rem; font-size: 1.6rem; }
+  .section p { margin: .25rem 0 0; color: var(--muted); max-width: 70ch; }
+
+  <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+  />
+
+  /* FOOTER */
+  .footer { background: #fff; border-top: 1px solid #e5e7eb; margin-top: 2rem; }
+  .footer__inner { display: flex; gap: 1rem; justify-content: space-between; align-items: center; padding: 1rem 0; color: var(--muted); }
+  .footer a { color: var(--link); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kholwad Capital</title>
+    <link rel="icon" href="./favicon.png" />
+    <!-- Tailwind CDN (no configuration needed) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="antialiased bg-gray-50">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
