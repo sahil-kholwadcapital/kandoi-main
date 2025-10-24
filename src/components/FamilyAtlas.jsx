@@ -134,31 +134,52 @@ export default function FamilyAtlas() {
 
 /* -------------------- Build Lookup + Pins -------------------- */
 const { countryLookup, allPins, ringPins } = useMemo(() => {
-  const lookup = new Map();
-  const pins = [];
+    const lookup = new Map();
+    const pins = [];
 
-  for (const c of seed.countries || []) {
-    lookup.set(c.iso3.toUpperCase(), c);
-    for (const t of c.trips || [])
-      for (const p of t.pins || [])
-        pins.push({ ...p, iso3: c.iso3.toUpperCase(), country: c.label });
-  }
+    for (const c of seed.countries || []) {
+      lookup.set(c.iso3.toUpperCase(), c);
+      for (const t of c.trips || [])
+        for (const p of t.pins || [])
+          pins.push({ ...p, iso3: c.iso3.toUpperCase(), country: c.label });
+    }
 
-  const rings = pins.map((p) => ({
-    lat: p.lat,
-    lng: p.lng,
-    ringColor: () => "rgba(250, 199, 80, 0.33)",  // soft golden glow
-    ringMaxRadius: 2.0,                          // smaller rings
-    altitude: 0.012,                             // raised slightly above surface
-    repeatPeriod: 2500                           // slower pulse
+    // Build concentric, slightly raised rings per pin to avoid clipping and keep them subtle.
+    const rings = pins.flatMap((p) => {
+      // Three concentric rings: inner, mid, outer — reduced radii, lower opacity, staggered periods.
+      return [
+        {
+          lat: p.lat,
+          lng: p.lng,
+          ringColor: () => "rgba(250,199,80,0.55)", // soft gold, inner brightest
+          ringMaxRadius: 0.6,                        // smaller inner radius
+          altitude: 0.018,                           // slightly raised to avoid clipping
+          repeatPeriod: 1800,
+        },
+        {
+          lat: p.lat,
+          lng: p.lng,
+          ringColor: () => "rgba(250,199,80,0.35)", // medium opacity
+          ringMaxRadius: 1.0,                        // mid radius
+          altitude: 0.020,
+          repeatPeriod: 2200,
+        },
+        {
+          lat: p.lat,
+          lng: p.lng,
+          ringColor: () => "rgba(250,199,80,0.25)", // faint outer ring
+          ringMaxRadius: 1.4,                        // outer radius kept moderate
+          altitude: 0.024,
+          repeatPeriod: 3400,
+        },
+      ];
+    });
 
-  }));
+    // 👇 Add this log line just before the return
+    console.log("Loaded countries:", Array.from(lookup.keys()).slice(0, 20));
 
-  // 👇 Add this log line just before the return
-  console.log("Loaded countries:", Array.from(lookup.keys()).slice(0, 20));
-
-  return { countryLookup: lookup, allPins: pins, ringPins: rings };
-}, []);
+    return { countryLookup: lookup, allPins: pins, ringPins: rings };
+  }, []);
 
 
   /* -------------------- Helpers -------------------- */
@@ -398,14 +419,11 @@ const { countryLookup, allPins, ringPins } = useMemo(() => {
   pointRadius={0.25}
   pointAltitude={0.022}
 
-  ringsData={ringPins.map(r => ({
-    ...r,
-    ringColor: () => "rgba(250,199,80,0.45)"
-  }))}
+  ringsData={ringPins}
   ringColor="ringColor"
   ringMaxRadius="ringMaxRadius"
   ringAltitude="altitude"
-  ringPropagationSpeed={0.8}
+  ringPropagationSpeed={.4}   // slower, smoother propagation
   ringRepeatPeriod="repeatPeriod"
 
   autoRotate={seed.settings.globe.autoRotate}

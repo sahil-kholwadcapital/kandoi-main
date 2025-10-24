@@ -115,12 +115,16 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl font-semibold">About</h2>
           <p className="mt-2 max-w-3xl text-gray-600">
-            Explore the portfolio—or step into a private project that reflects
-            our more personal vision.
+            Kholwad Capital, est. 2025
           </p>
           <div className="mt-4">
             <Link to="/holdings" className="text-teal-700 hover:underline font-medium">
-              View Holdings →
+              View the Portfolio →
+            </Link>
+            
+            <div className="mt-4"></div>
+            <Link to="/about" className="text-teal-700 hover:underline font-medium">
+              View our Philosophy →
             </Link>
           </div>
         </div>

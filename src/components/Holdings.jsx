@@ -3,47 +3,34 @@ import React from "react";
 
 const HOLDINGS = [
   {
-    title: "Property A",
+    title: "Rental Property- Desert Fox",
+    kind: "Residental Real Estate • Active",
+    blurb:
+      "Safe, modern living in a prime location. Excellent schools, open green spaces and parks, with easy access to restaurants and grocery stores.",
+    img: "https://photos.zillowstatic.com/fp/b640ce1f89d6d65284d3adf39366aa7f-cc_ft_1536.jpg",
+  },
+  {
+    title: "Rental Property - Domingo Baca",
     kind: "Real Estate • Active",
     blurb:
-      "Well-located infill with clean downside and simple operations. We favor predictability over flash.",
-    img: "https://images.unsplash.com/photo-1479839672679-a46483c0e7c8?q=80&w=1600&auto=format&fit=crop",
+      "Well-located, clean, safe. Excellent school district with large parks, restaurants, and grocery shopping nearby.",
+    img: "https://photos.zillowstatic.com/fp/3dd5043ca92996d4c4781a0f7c4ddb83-cc_ft_1536.jpg",
   },
   {
-    title: "Property B",
-    kind: "Real Estate • Active",
+    title: "Hyatt Place Albuquerque Uptown",
+    kind: "Investment • Passive",
     blurb:
-      "Straightforward income with light value-add. The boring things compound the best.",
-    img: "https://images.unsplash.com/photo-1496302662116-35cc4f36df92?q=80&w=1600&auto=format&fit=crop",
+      "A beautiful hotel in Albuquerque's Uptown",
+    img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/30/47/25/f9/exterior.jpg?w=900&h=500&s=1",
   },
   {
-    title: "Business A",
-    kind: "Operating • Active",
+title: "Dual Brand Marriott Fairfield and Towneplace Albuquerque Uptown",
+    kind: "Investment • Passive",
     blurb:
-      "A small, durable company where operations matter more than forecasts.",
-    img: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1600&auto=format&fit=crop",
+      "A beautiful dual-branded Marriott Fairfield and Towneplace located at Albuquerque's Uptown, in the Winrock Town Center.",
+    img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2d/1d/6b/26/caption.jpg?w=900&h=-1&s=1",
   },
-  {
-    title: "Business B",
-    kind: "Operating • Active",
-    blurb:
-      "Simple unit economics, patient improvements, no heroics required.",
-    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1600&auto=format&fit=crop",
-  },
-  {
-    title: "Investment A",
-    kind: "Passive • Minority",
-    blurb:
-      "Aligned partner, understandable thesis, long runway. We prefer time in to timing.",
-    img: "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?q=80&w=1600&auto=format&fit=crop",
-  },
-  {
-    title: "Investment B",
-    kind: "Passive • Fund",
-    blurb:
-      "Low-friction exposure to quality operators with a similar horizon.",
-    img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop",
-  },
+
 ];
 
 export default function Holdings() {
@@ -52,9 +39,8 @@ export default function Holdings() {
       <header>
         <h1 className="text-3xl font-semibold">Holdings</h1>
         <p className="mt-2 text-gray-600 max-w-3xl">
-          We like assets that don’t need perfect conditions to work:
-          understandable, cash-generative, and hard to break.
-          Some we run; others we ride along with partners we trust.
+          Speak plainly, invest in what will work, and return capital.                                                    
+          We operate and partner.
         </p>
       </header>
 

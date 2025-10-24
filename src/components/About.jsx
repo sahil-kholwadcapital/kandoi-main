@@ -7,7 +7,7 @@ export default function About() {
       <header>
         <h1 className="text-3xl font-semibold">About Kholwad Capital</h1>
         <p className="mt-2 text-gray-600 max-w-3xl">
-          We’re a privately held holding company focused on durable assets and
+          We’re a privately held real estate company focused on durable assets and
           simple, understandable businesses. Our bias is toward long-term
           ownership, disciplined underwriting, and compounding cash flows.
         </p>

@@ -20,8 +20,8 @@ export default function App() {
             <Link to="/" className="hover:text-teal-600 transition-colors">Home</Link>
             <Link to="/holdings" className="hover:text-teal-600 transition-colors">Holdings</Link>
             <Link to="/about" className="hover:text-teal-600 transition-colors">About</Link>
-            <Link to="/family-tree" className="hover:text-teal-600 transition-colors">Family Tree</Link>
-            <Link to="/family-atlas" className="hover:text-teal-600 transition-colors">Family Atlas</Link>
+            <Link to="/family-tree" className="hover:text-teal-600 transition-colors"> Kholwad Tree</Link>
+            <Link to="/family-atlas" className="hover:text-teal-600 transition-colors"> Atlas</Link>
           </div>
         </div>
       </nav>
