@@ -152,14 +152,14 @@ const seed = {
                                   name: "Ankur",
                                   spouses: ["Sweta"],
                                   children: [{ name: "Naisha" }],
-                                },
-                                {
-                                  name: "Dipak",
-                                  spouses: ["Priti"],
-                                  children: [{ name: "Priya" }, { name: "Kishen" }],
-                                },
+                                }
                               ],
                             },
+                            {
+                              name: "Dipak",
+                              spouses: ["Priti"],
+                              children: [{ name: "Priya" }, { name: "Kishen" }],
+                            }
                           ],
                         },
                         { name: "Pushpa", spouses: ["Ishwar"] },
@@ -458,6 +458,9 @@ const seed = {
                             },
                           ],
                         },
+                        
+                          ],
+                        },
                         { name: "Vijree", spouses: ["Chunni"] },
                         {
                           name: "Jakisun",
@@ -549,8 +552,6 @@ const seed = {
                             { name: "Samir", spouses: ["Radhika"] },
                             { name: "Unknown" },
                             { name: "Unknown" },
-                          ],
-                        },
                       ],
                     },
                   ],

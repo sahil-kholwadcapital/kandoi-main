@@ -56,9 +56,9 @@ export default function About() {
         </ul>
       </section>
 
-      {/* Principles */}
+      {/* Philosophy */}
       <section className="mt-10">
-        <h2 className="text-2xl font-semibold">Principles</h2>
+        <h2 className="text-2xl font-semibold">Philosophy</h2>
         <ol className="mt-3 list-decimal ml-5 text-gray-700 space-y-2">
           <li>Underwrite to resiliency first; upside second.</li>
           <li>Prefer simplicity, transparency, and alignment.</li>
@@ -66,7 +66,7 @@ export default function About() {
         </ol>
       </section>
 
-      {/* Light, not-obvious link to Family Tree */}
+      {/* Family Background */}
       <section className="mt-10">
         <h2 className="text-2xl font-semibold">Background</h2>
         <p className="mt-2 text-gray-600 max-w-3xl">
