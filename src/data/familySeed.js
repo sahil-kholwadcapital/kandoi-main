@@ -369,7 +369,21 @@ const seed = {
                                   website: "",
                                   tile1: { title: "Custom Tile 1", content: "text text text" },
                                   tile2: { title: "Custom Tile 2", content: "text text text" },
-                                  tile3: { title: "Custom Tile 3", content: "text text text" }
+                                  tile3: { title: "Custom Tile 3", content: "text text text" },
+                                  spouses: [
+                                    {
+                                      name: "Cece Gerstenbacher (engaged)",
+                                      gender: "female",
+                                      dob: "",
+                                      focus: "",
+                                      location: "",
+                                      bio: "",
+                                      website: "",
+                                      tile1: { title: "Custom Tile 1", content: "text text text" },
+                                      tile2: { title: "Custom Tile 2", content: "text text text" },
+                                      tile3: { title: "Custom Tile 3", content: "text text text" }
+                                    }
+                                  ]
                                 },
                                 {
                                   name: "Sahil Kholwadwala",
