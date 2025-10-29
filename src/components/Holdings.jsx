@@ -38,10 +38,12 @@ export default function Holdings() {
     <div className="max-w-6xl mx-auto px-4 py-12">
       <header>
         <h1 className="text-3xl font-semibold">Holdings</h1>
+        {/*
         <p className="mt-2 text-gray-600 max-w-3xl">
           Speak plainly, invest in what will work, and return capital.                                                    
           We operate and partner.
         </p>
+        */}
       </header>
 
       {/* grid */}

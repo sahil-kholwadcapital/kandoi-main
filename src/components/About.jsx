@@ -1,19 +1,62 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 export default function About() {
-  return (
-    <div className="max-w-5xl mx-auto px-4 py-12">
-      <header>
-        <h1 className="text-3xl font-semibold">About Kholwad Capital</h1>
-        <p className="mt-2 text-gray-600 max-w-3xl">
-          We’re a privately held real estate company focused on durable assets and
-          simple, understandable businesses. Our bias is toward long-term
-          ownership, disciplined underwriting, and compounding cash flows.
-        </p>
-      </header>
+  const title = "Kholwad Capital".split("");
+  const subtitle = "Established 2025".split("");
 
-      {/* Approach */}
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+
+  const smoothX = useSpring(cursorX, { stiffness: 40, damping: 12 });
+  const smoothY = useSpring(cursorY, { stiffness: 40, damping: 12 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    cursorX.set(e.clientX - (rect.left + rect.width / 2));
+    cursorY.set(e.clientY - (rect.top + rect.height / 2));
+  };
+
+  const magneticOffset = (baseIndex, total) => {
+    const offset = baseIndex - total / 2;
+
+    return {
+      x: useTransform(smoothX, (v) => v * 0.08 * offset),
+      y: useTransform(smoothY, (v) => v * 0.08 * offset)
+    };
+  };
+
+  return (
+    <div className="relative min-h-screen flex items-center justify-center bg-white">
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-soft-light" />
+
+      <div className="relative text-center px-6 select-none" onMouseMove={handleMouseMove}>
+        {/* TITLE */}
+        <motion.h1 className="text-6xl font-light uppercase tracking-widest flex justify-center gap-[0.05em]">
+          {title.map((char, i) => (
+            <motion.span key={i} style={magneticOffset(i, title.length)}>
+              {char === " " ? "\u00A0" : char}
+            </motion.span>
+          ))}
+        </motion.h1>
+
+        {/* SUBTITLE */}
+        <motion.p className="text-gray-500 mt-4 text-sm uppercase tracking-widest flex justify-center gap-[0.15em]">
+          {subtitle.map((char, i) => (
+            <motion.span key={i} style={magneticOffset(i, subtitle.length)}>
+              {char === " " ? "\u00A0" : char}
+            </motion.span>
+          ))}
+        </motion.p>
+      </div>
+    </div>
+  );
+}
+
+
+
+     { /* Description 
       <section className="mt-10">
         <h2 className="text-2xl font-semibold">Approach</h2>
         <p className="mt-2 text-gray-600 max-w-3xl">
@@ -24,7 +67,7 @@ export default function About() {
         </p>
       </section>
 
-      {/* Focus Areas */}
+      {/* Focus Areas    
       <section className="mt-10">
         <h2 className="text-2xl font-semibold">Focus Areas</h2>
         <ul className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -56,7 +99,8 @@ export default function About() {
         </ul>
       </section>
 
-      {/* Philosophy */}
+
+      {/* Philosophy 
       <section className="mt-10">
         <h2 className="text-2xl font-semibold">Philosophy</h2>
         <ol className="mt-3 list-decimal ml-5 text-gray-700 space-y-2">
@@ -66,7 +110,7 @@ export default function About() {
         </ol>
       </section>
 
-      {/* Family Background */}
+      {/* Family Background 
       <section className="mt-10">
         <h2 className="text-2xl font-semibold">Background</h2>
         <p className="mt-2 text-gray-600 max-w-3xl">
@@ -82,8 +126,9 @@ export default function About() {
           .
         </p>
       </section>
+      */}
 
-      {/* CTA row */}
+      {/* CTA row 
       <div className="mt-12 flex gap-3">
         <Link
           to="/holdings"
@@ -98,6 +143,4 @@ export default function About() {
           Contact
         </a>
       </div>
-    </div>
-  );
-}
+      */}

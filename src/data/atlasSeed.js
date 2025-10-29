@@ -1,8 +1,8 @@
 // src/data/atlasSeed.js
 const seed = {
   meta: {
-    title: "Family Atlas",
-    lastUpdated: "2025-10-12",
+    title: "Atlas of Sahil Kholwadwala",
+    lastUpdated: "2025-10-28",
   },
   countries: [
     {
